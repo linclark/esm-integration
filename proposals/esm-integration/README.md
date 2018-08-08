@@ -115,6 +115,12 @@ For WebAssembly, evaluation consists of:
 
 Because JS modules that the WebAssembly module imports from are already evaluated at this point, their values will be available for WebAssembly to snapshot.
 
+#### A note on snapshotting
+
+For JavaScript ES modules, an export name is bound to a slot on the Module Record. For all of the values that we currently allow, this slot will contain a reference to another memory location, which contains the object (e.g. the `WebAssembly.Global` object that is being imported).
+
+The term "snapshot" means that WebAssembly will snapshot the reference. This does result in an observable difference between the way JavaScript and WebAssembly handle updates. In JavaScript modules, it is possible for the exporting module to update an export to point to a different object. Other JavaScript modules that are importing that export will then get the new object. In contrast, while WebAssembly modules will see changes to the object that the export was first bound to (e.g. when the exporting module calls `WebAssembly.Global.prototype.set` to change the value), the WebAssembly module will never see updated bindings.
+
 ## Examples and explanation of import/export handling
 
 Some imports are challenging to handle in the current WebAssembly specification. In this section, we will discuss each kind of export and what the specification described above means for how it is handled.
